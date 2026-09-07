@@ -1,0 +1,24 @@
+{
+  "machine_id": "A102",
+  "procedure_id": "demo_001",
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Close Valve",
+      "instruction": "Turn the isolation valve to the closed position.",
+      "target_component": "isolation_valve"
+    },
+    {
+      "step_number": 2,
+      "title": "Open Housing",
+      "instruction": "Open the filter housing.",
+      "target_component": "filter_housing"
+    },
+    {
+      "step_number": 3,
+      "title": "Remove Filter",
+      "instruction": "Remove the filter element.",
+      "target_component": "filter_element"
+    }
+  ]
+}

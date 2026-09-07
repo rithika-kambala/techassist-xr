@@ -34,7 +34,7 @@ public class MachineSelectHandler : MonoBehaviour
         // Trigger the state machine change
         if (SessionStateMachine.Instance != null)
         {
-            SessionStateMachine.Instance.SetState(SessionState.MachineSelected);
+            SessionStateMachine.Instance.StartSession();
         }
     }
 }
