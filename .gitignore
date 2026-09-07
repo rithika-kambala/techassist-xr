@@ -10,3 +10,4 @@
 *.tmp
 .vs/
 .DS_Store
+echo "*.slnx" >> .gitignore
