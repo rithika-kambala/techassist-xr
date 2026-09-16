@@ -5,7 +5,7 @@ This update adds a real authenticated backend, Gemini/OpenAI diagnosis integrati
 ## What's included
 
 - `backend/`: Node 24 service, pinned dependency/lockfile, SQLite persistence, tests and Dockerfile.
-- `render.yaml`: Render Blueprint, single paid Starter service with a 1 GiB persistent disk.
+- `render.yaml`: Render Blueprint, single Free service with temporary SQLite storage.
 - `.github/workflows/backend.yml`: tests on Node 24 and Docker build on GitHub Actions.
 - `Assets/TechAssistXRHybrid`: Unity model, workbench, authenticated connection form and integration test.
 
@@ -15,7 +15,7 @@ The existing repository root `server.js` is a legacy relay. Deploy **backend/src
 
 1. Commit the new backend, Render Blueprint, CI workflow and changed `Assets/TechAssistXRHybrid` files to a branch in your GitHub repository. Review unrelated local changes separately. Do not commit `.env`, tokens, node_modules, SQLite files or Library.
 2. Sign in to Render, choose **New > Blueprint**, select `rithika-kambala/techassist-xr`, and choose the branch containing these files.
-3. Review the selected service and disk pricing. The Blueprint requires a paid service because SQLite data must survive restarts. It is not a free-tier configuration.
+3. Confirm the service plan is Free. No disk or paid database is configured. Keep the workspace without a payment method to prevent paid bandwidth/build overages. If Render requires paid setup, stop.
 4. Set **GEMINI_API_KEY** privately when prompted, from your own Google AI Studio free-tier project with billing disabled. Leave `AI_MODE=gemini` and `GEMINI_MODEL=gemini-2.5-flash-lite` for real AI. There is no automatic fallback to mock AI.
 5. Render generates **TECHNICIAN_TOKEN** as a secret. After deploying, obtain its value privately from the service Environment page. Do not put it in GitHub or a Unity scene.
 6. Wait until `https://YOUR-SERVICE.onrender.com/readyz` returns `status: ready`. This checks service/storage readiness; it does not spend tokens to verify an AI completion.
@@ -122,8 +122,16 @@ The default provider is Gemini 2.5 Flash-Lite. Obtain your own key at https://ai
 
 Google's free tier may use submitted content to improve its products. Use only the supplied synthetic training data for the demo, not confidential machine documents. See https://ai.google.dev/gemini-api/docs/pricing and https://ai.google.dev/gemini-api/docs/rate-limits . Provider integration follows https://ai.google.dev/api/generate-content .
 
-OpenAI remains optional: set AI_MODE=openai, OPENAI_API_KEY and OPENAI_MODEL. An OpenAI key is not assumed to include free usage. Free Gemini API usage does not make Render's persistent disk hosting free. No paid resources have been provisioned.
+OpenAI remains optional: set AI_MODE=openai, OPENAI_API_KEY and OPENAI_MODEL. An OpenAI key is not assumed to include free usage. Render uses its Free plan with temporary storage. No paid resources have been provisioned.
 
 ## Unity version and assets
 
 The existing repository uses Unity 6000.4.11f1 (Unity 6.4), matching the installed editor and validation environment. Unity 2022.3 and Quest hardware have not been validated. TextMesh Pro essential resources are included so the saved workbench scene resolves its fonts in a fresh checkout.
+
+## Free-only demo limits
+
+Only free services are authorized. Keep Gemini on Free tier with billing disabled; never switch to OpenAI or enable paid fallback for this deployment. Use the offline demo for rehearsals to avoid AI calls. Each new diagnosis makes at most one provider request; completed request IDs reuse their stored result while storage survives.
+
+Render Free sleeps after 15 minutes idle and may take about a minute to wake. Open `/readyz` in a browser before connecting Unity. Its temporary SQLite data (diagnoses, session history, duplicate-event records and application quotas) is lost on sleep, restart or redeploy. Start a new diagnosis/session after a restart. This is a demo endpoint, not durable production storage. Gemini's own free-tier quota remains the external usage limit. No keep-alive service or expiring free database is added.
+
+Render includes usage limits. With no payment method, excess bandwidth suspends services and excess build minutes disable builds rather than charging. See https://render.com/docs/free .

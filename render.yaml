@@ -2,17 +2,13 @@ services:
   - type: web
     name: techassist-xr-api
     runtime: node
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: npm ci --omit=dev --ignore-scripts
     startCommand: npm start
     healthCheckPath: /readyz
     autoDeployTrigger: "off"
     numInstances: 1
-    disk:
-      name: techassist-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "24"
@@ -27,7 +23,7 @@ services:
       - key: TECHNICIAN_TOKEN
         generateValue: true
       - key: DB_PATH
-        value: /var/data/techassist.sqlite
+        value: /tmp/techassist.sqlite
       - key: DAILY_LIMIT
         value: "20"
       - key: GLOBAL_DAILY_LIMIT
