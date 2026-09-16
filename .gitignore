@@ -1,12 +1,5 @@
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
-*.csproj
-*.sln
-*.tmp
-.vs/
+.venv/
+__pycache__/
+*.pyc
+.env
 .DS_Store
