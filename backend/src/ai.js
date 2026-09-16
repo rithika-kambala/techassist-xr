@@ -49,7 +49,7 @@ async function diagnoseGemini(config, fetchImpl, report, machine) {
     });
   } catch { throw new ApiError(504,'ai_timeout','AI provider did not respond in time. Retry later.'); }
   if (response.status === 429) throw new ApiError(429,'ai_quota','Gemini quota is temporarily exhausted. Try later or use the offline demo. No paid fallback was used.');
-  if (!response.ok) throw new ApiError(502,'ai_provider_error','Gemini rejected the request. Check the API key and model access.');
+  if (!response.ok) { const failure = await geminiFailure(response); throw new ApiError(502,'ai_provider_error',failure.message); }
   let body;
   try { body = await response.json(); } catch { throw new ApiError(502,'invalid_ai_output','AI returned an invalid response.'); }
   const candidate = body?.candidates?.[0];
@@ -60,4 +60,27 @@ async function diagnoseGemini(config, fetchImpl, report, machine) {
   try { plan = JSON.parse((candidate.content?.parts || []).filter(p => !p.thought && typeof p.text === 'string').map(p => p.text).join('')); }
   catch { throw new ApiError(502,'invalid_ai_output','AI returned an invalid response.'); }
   return validatePlan(plan,machine);
+}
+
+// Never return provider messages, headers, request data or API keys in diagnostics.
+export async function geminiFailure(response) {
+  let body; try { body = await response.json(); } catch { body = {}; }
+  const allowed = new Set(['API_KEY_INVALID','API_KEY_EXPIRED','API_KEY_SERVICE_BLOCKED','API_KEY_HTTP_REFERRER_BLOCKED','API_KEY_IP_ADDRESS_BLOCKED','SERVICE_DISABLED','BILLING_DISABLED','CONSUMER_INVALID']);
+  const reason = (body?.error?.details || []).map(x => x.reason).find(x => allowed.has(x)) || 'UNSPECIFIED';
+  let message = `Gemini rejected the request (HTTP ${response.status}, ${reason}). Check the server key and model configuration.`;
+  if (reason === 'API_KEY_INVALID' || reason === 'API_KEY_EXPIRED' || response.status === 401)
+    message = 'Gemini API key is invalid or expired. Replace GEMINI_API_KEY in Render with your Google AI Studio key, then redeploy.';
+  else if (response.status === 404)
+    message = 'Gemini model is unavailable for this key. Update GEMINI_MODEL to an available free-tier model in Render.';
+  else if (response.status === 403)
+    message = `Gemini access is denied (${reason}). Check API key restrictions and project access; do not enable paid billing.`;
+  return {http_status:response.status,reason,message};
+}
+export async function checkGeminiAccess(config, fetchImpl=fetch) {
+  try {
+    const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}`, {
+      headers:{'x-goog-api-key':config.geminiKey}, signal:AbortSignal.timeout(10000)
+    });
+    return response.ok ? {http_status:response.status,reason:'MODEL_ACCESS_OK'} : await geminiFailure(response);
+  } catch { return {http_status:0,reason:'NETWORK_OR_TIMEOUT'}; }
 }

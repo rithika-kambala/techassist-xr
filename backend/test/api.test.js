@@ -59,3 +59,11 @@ test('Gemini rejects quota, refusal, truncation and malformed plans without fall
  ];
  for(const [status,body,code] of cases){let calls=0;const diagnose=makeDiagnoser({...config,aiMode:'gemini',geminiModel:'test'},async()=>{calls++;return new Response(JSON.stringify(body),{status});});await assert.rejects(()=>diagnose('oil leak',machine),e=>e.code===code);assert.equal(calls,1);}
 });
+test('Gemini access diagnostics are sanitized and do not generate text',async()=>{
+ const {checkGeminiAccess}=await import('../src/ai.js');let calls=0;
+ const result=await checkGeminiAccess({geminiModel:'test',geminiKey:'private'},async(url,options)=>{
+  calls++; assert.ok(!url.includes('generateContent'));assert.equal(options.body,undefined);
+  return new Response(JSON.stringify({error:{message:'secret must never appear',details:[{reason:'API_KEY_INVALID'}]}}),{status:400});
+ });
+ assert.equal(calls,1);assert.equal(result.reason,'API_KEY_INVALID');assert.ok(!JSON.stringify(result).includes('secret must never appear'));
+});

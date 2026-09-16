@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { parseUsers, validateMachine } from './domain.js';
 import { Store } from './store.js';
-import { makeDiagnoser } from './ai.js';
+import { makeDiagnoser, checkGeminiAccess } from './ai.js';
 import { createApp } from './app.js';
 const integer=(name,value,defaultValue)=>{const n=Number(value??defaultValue);if(!Number.isSafeInteger(n)||n<1)throw new Error(name+' must be a positive integer.');return n;};
 const config={
@@ -23,3 +23,5 @@ const app=createApp({config,store,machines,diagnose:makeDiagnoser(config)});
 const port=integer('PORT',process.env.PORT,8080);
 app.server.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(JSON.stringify({event:'listening',port,ai_mode:config.aiMode,model:config.aiMode==='gemini'?config.geminiModel:config.model})));
 for(const signal of ['SIGINT','SIGTERM']) process.once(signal,()=>{const deadline=setTimeout(()=>process.exit(1),15000);deadline.unref();app.close().then(()=>process.exit(0));});
+
+if(config.aiMode==='gemini') checkGeminiAccess(config).then(result=>console.log(JSON.stringify({event:'gemini_access_check',...result})));
