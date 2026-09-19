@@ -1,0 +1,23 @@
+name: Backend checks
+on:
+  push:
+    paths: ['backend/**', 'render.yaml', '.github/workflows/backend.yml']
+  pull_request:
+    paths: ['backend/**', 'render.yaml', '.github/workflows/backend.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+      - run: docker build -t techassist-api ./backend
