@@ -135,3 +135,9 @@ Only free services are authorized. Keep Gemini on Free tier with billing disable
 Render Free sleeps after 15 minutes idle and may take about a minute to wake. Open `/readyz` in a browser before connecting Unity. Its temporary SQLite data (diagnoses, session history, duplicate-event records and application quotas) is lost on sleep, restart or redeploy. Start a new diagnosis/session after a restart. This is a demo endpoint, not durable production storage. Gemini's own free-tier quota remains the external usage limit. No keep-alive service or expiring free database is added.
 
 Render includes usage limits. With no payment method, excess bandwidth suspends services and excess build minutes disable builds rather than charging. See https://render.com/docs/free .
+
+## Groq free-tier alternative
+
+Create your own key at https://console.groq.com/keys using a Free account without upgrading or adding billing. In Render Environment set `GROQ_API_KEY` privately, `GROQ_MODEL=openai/gpt-oss-20b`, and `AI_MODE=groq`, then deploy the latest branch commit. Keep the current technician token; Unity requires no changes. The adapter makes one request with low reasoning effort and a 2048-token completion limit, validates source/component IDs, and never falls back to a paid provider. Account quotas still apply.
+
+Groq support is implemented but requires a user-owned key and live validation before claiming successful generation. Provider docs: https://console.groq.com/docs/structured-outputs and https://console.groq.com/docs/billing-faqs .

@@ -14,6 +14,7 @@ const instructions = 'You create source-grounded technician TRAINING inspection 
 export function makeDiagnoser(config, fetchImpl=fetch) {
   return async (report,machine) => {
     if(config.aiMode === 'mock') return validatePlan(mockPlan(report,machine),machine);
+    if(config.aiMode === 'groq') return diagnoseGroq(config,fetchImpl,report,machine);
     if(config.aiMode === 'gemini') return diagnoseGemini(config,fetchImpl,report,machine);
     let response;
     try {
@@ -83,4 +84,26 @@ export async function checkGeminiAccess(config, fetchImpl=fetch) {
     });
     return response.ok ? {http_status:response.status,reason:'MODEL_ACCESS_OK'} : await geminiFailure(response);
   } catch { return {http_status:0,reason:'NETWORK_OR_TIMEOUT'}; }
+}
+
+async function diagnoseGroq(config, fetchImpl, report, machine) {
+  let response;
+  try {
+    response = await fetchImpl('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST', signal:AbortSignal.timeout(config.aiTimeoutMs),
+      headers:{Authorization:`Bearer ${config.groqKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:config.groqModel, max_completion_tokens:2048, reasoning_effort:'low',
+        messages:[{role:'system',content:instructions},{role:'user',content:JSON.stringify({technician_report:report,machine})}],
+        response_format:{type:'json_schema',json_schema:{name:'technician_inspection_plan',strict:true,schema:schemaFor(machine)}}})
+    });
+  } catch { throw new ApiError(504,'ai_timeout','Groq did not respond in time. Retry later.'); }
+  if(response.status===429) throw new ApiError(429,'ai_quota','Groq free-tier quota reached. Try later or use Offline demo. No paid fallback was used.');
+  if(response.status===401 || response.status===403) throw new ApiError(502,'ai_provider_error','Groq access denied. Check GROQ_API_KEY in Render and keep the Groq account on Free tier.');
+  if(!response.ok) throw new ApiError(502,'ai_provider_error',`Groq rejected the request (HTTP ${response.status}). Check GROQ_MODEL and account access.`);
+  let body; try { body=await response.json(); } catch { throw new ApiError(502,'invalid_ai_output','Groq returned invalid JSON.'); }
+  const choice=body?.choices?.[0];
+  if(choice?.message?.refusal || choice?.finish_reason==='content_filter') throw new ApiError(422,'ai_refusal','Groq declined this request. Seek expert review.');
+  if(choice?.finish_reason!=='stop') throw new ApiError(502,'ai_incomplete','Groq returned an incomplete plan.');
+  let plan; try { plan=JSON.parse(choice.message.content); } catch { throw new ApiError(502,'invalid_ai_output','Groq returned an invalid plan.'); }
+  return validatePlan(plan,machine);
 }

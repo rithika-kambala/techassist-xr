@@ -67,3 +67,18 @@ test('Gemini access diagnostics are sanitized and do not generate text',async()=
  });
  assert.equal(calls,1);assert.equal(result.reason,'API_KEY_INVALID');assert.ok(!JSON.stringify(result).includes('secret must never appear'));
 });
+test('Groq strict request and validated plan',async()=>{
+ const plan=mockPlan('oil leak',machine);let calls=0;
+ const diagnose=makeDiagnoser({...config,aiMode:'groq',groqKey:'test-key',groqModel:'openai/gpt-oss-20b'},async(url,options)=>{
+  calls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');
+  const body=JSON.parse(options.body);assert.equal(body.response_format.json_schema.strict,true);assert.equal(body.max_completion_tokens,2048);assert.equal(body.reasoning_effort,'low');
+  return new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(plan)}}]}));
+ });assert.deepEqual(await diagnose('oil leak',machine),plan);assert.equal(calls,1);
+});
+test('Groq quota, key, truncation and invalid sources fail without fallback',async()=>{
+ const invalid={...mockPlan('oil leak',machine),source_ids:['unknown']};
+ for(const [status,body,code] of [[429,{},'ai_quota'],[401,{},'ai_provider_error'],[400,{},'ai_provider_error'],[200,{choices:[{finish_reason:'length'}]},'ai_incomplete'],[200,{choices:[{finish_reason:'stop',message:{refusal:'No'}}]},'ai_refusal'],[200,{choices:[{finish_reason:'stop',message:{content:JSON.stringify(invalid)}}]},'invalid_ai_output']]){
+  let calls=0;const diagnose=makeDiagnoser({...config,aiMode:'groq'},async()=>{calls++;return new Response(JSON.stringify(body),{status});});
+  await assert.rejects(()=>diagnose('oil leak',machine),e=>e.code===code);assert.equal(calls,1);
+ }
+});
