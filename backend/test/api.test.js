@@ -82,3 +82,14 @@ test('Groq quota, key, truncation and invalid sources fail without fallback',asy
   await assert.rejects(()=>diagnose('oil leak',machine),e=>e.code===code);assert.equal(calls,1);
  }
 });
+test('generated citation metadata reconciles without changing repair content',async()=>{
+ const {validateGeneratedPlan}=await import('../src/domain.js');const plan=mockPlan('oil leak',machine);
+ plan.source_ids=['TRAIN-01'];plan.steps[1].source_ids=['TRAIN-02','TRAIN-02'];const before=JSON.stringify(plan);
+ const result=validateGeneratedPlan(plan,machine);
+ assert.deepEqual(result.source_ids,['TRAIN-01','TRAIN-02','TRAIN-03']);assert.deepEqual(result.steps[1].source_ids,['TRAIN-02']);
+ assert.equal(JSON.stringify(plan),before);
+ assert.deepEqual(result.steps.map(s=>[s.step_number,s.target_component,s.instruction]),plan.steps.map(s=>[s.step_number,s.target_component,s.instruction]));
+ const unknown=structuredClone(plan);unknown.steps[1].source_ids=['invented'];assert.throws(()=>validateGeneratedPlan(unknown,machine),/missing or unknown/);
+ const wrong=structuredClone(plan);wrong.steps[1].target_component='invented';assert.throws(()=>validateGeneratedPlan(wrong,machine),/target component/);
+ const numbered=structuredClone(plan);numbered.steps[1].step_number=8;assert.throws(()=>validateGeneratedPlan(numbered,machine),/numbering/);
+});

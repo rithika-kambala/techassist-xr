@@ -49,6 +49,31 @@ export function validatePlan(plan, machine) {
   const sources = ids => Array.isArray(ids) && ids.length > 0 && ids.length <= machine.sources.length && new Set(ids).size === ids.length && ids.every(id => machine.sources.some(s => s.id === id));
   assert(plan && text(plan.summary, 1600) && typeof plan.needs_expert === 'boolean' && sources(plan.source_ids) && Array.isArray(plan.steps) && plan.steps.length <= 12, 502, 'invalid_ai_output', 'AI output did not pass validation.');
   assert(plan.needs_expert ? plan.steps.length === 0 : plan.steps.length > 0, 502, 'invalid_ai_output', 'AI must either provide a plan or request expert review.');
-  plan.steps.forEach((step, i) => assert(step && step.step_number === i + 1 && text(step.title, 160) && text(step.instruction, 1800) && machine.components.includes(step.target_component) && sources(step.source_ids) && step.source_ids.every(id => plan.source_ids.includes(id)), 502, 'invalid_ai_output', 'An AI step references an invalid component or source.'));
+  plan.steps.forEach((step, i) => {
+    const check = (ok, message) => assert(ok,502,'invalid_ai_output',`AI step ${i+1}: ${message}`);
+    check(step && step.step_number === i+1,'numbering must be consecutive from 1.');
+    check(text(step.title,160),'title is empty or exceeds 160 characters.');
+    check(text(step.instruction,1800),'instruction is empty or exceeds 1800 characters.');
+    check(machine.components.includes(step.target_component),'target component is not in the machine catalog.');
+    check(sources(step.source_ids),'source citations are missing, duplicated or unknown.');
+    check(step.source_ids.every(id=>plan.source_ids.includes(id)),'step citation is missing from the plan source index.');
+  });
   return plan;
+}
+
+// The source index is redundant metadata. Build it from genuine supplied citations;
+// never invent a citation, change a component, reorder steps or alter instructions.
+export function validateGeneratedPlan(plan,machine) {
+  const known = new Set(machine.sources.map(s=>s.id));
+  const ids = value => {
+    assert(Array.isArray(value) && value.length>0 && value.length<=64 && value.every(id=>known.has(id)),502,'invalid_ai_output','AI source citations are missing or unknown.');
+    return [...new Set(value)];
+  };
+  assert(plan && Array.isArray(plan.steps) && plan.steps.length<=12,502,'invalid_ai_output','AI output did not pass validation.');
+  const top=ids(plan.source_ids);
+  const steps=plan.steps.map(step=>{
+    assert(step && typeof step==='object',502,'invalid_ai_output','AI step is invalid.');
+    return {...step,source_ids:ids(step.source_ids)};
+  });
+  return validatePlan({...plan,steps,source_ids:[...new Set([...top,...steps.flatMap(s=>s.source_ids)])]},machine);
 }
