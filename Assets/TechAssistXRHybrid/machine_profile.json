@@ -1,0 +1,31 @@
+{
+  "machine_id": "A102",
+  "name": "Hydraulic Power Unit",
+  "description": "Synthetic training assembly: electric motor, oil reservoir, pump, seal, return filter and control panel. Not a manufacturer-certified model.",
+  "components": [
+    "control_panel",
+    "oil_reservoir",
+    "pump_seal",
+    "filter_cover",
+    "motor_housing",
+    "pressure_gauge",
+    "isolation_valve"
+  ],
+  "sources": [
+    {
+      "id": "TRAIN-01",
+      "title": "Isolation checkpoint",
+      "text": "Synthetic training note: identify control_panel and acknowledge the isolation checkpoint before inspection. Real equipment requires its approved isolation procedure."
+    },
+    {
+      "id": "TRAIN-02",
+      "title": "Oil-path inspection map",
+      "text": "Synthetic training note: oil-leak inspection candidates are oil_reservoir, pump_seal and filter_cover. The symptom alone does not establish a failed part."
+    },
+    {
+      "id": "TRAIN-03",
+      "title": "Escalation boundary",
+      "text": "Synthetic training note: record observations and escalate to a qualified maintainer. No repair torque, replacement specification or restart approval is supplied."
+    }
+  ]
+}
