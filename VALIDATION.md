@@ -1,14 +1,13 @@
-# Validation result
+# Validation status — 20 September 2026
 
-- Backend: 12 integration tests passed on Node 24 and Node 26.
-- Unity: new and legacy desktop input code compiled against installed Unity 6000.4.11f1 assemblies.
-- In-Editor real HTTP integration: PASS. Authenticated catalog, mock AI provider, session creation and all four backend-confirmed step completions passed.
-- OpenAI request/strict schema/refusal handling tested with a fake provider; no live OpenAI request was made.
-- No Render service/public URL was created. No Docker daemon is installed locally; the provided CI includes a Docker build.
-- No headset or Unity 2022.3 validation was performed.
+- Backend: 18 automated tests passed. Provider responses are mocked in these tests; no paid AI calls are required.
+- Current Hybrid C# sources, including the macOS build helper: compiled against Unity 6000.4.11f1 assemblies with both new and legacy input symbols. Only deprecated Editor search API warnings.
+- Pure session engine: 37 assertions passed against current source.
+- Earlier Unity Editor integration evidence: Generated/BackendIntegrationTest.txt records a successful four-step local HTTP session using the mock provider, including target selection and server acknowledgments.
+- Public `/readyz`: returned `{"status":"ready","ai_mode":"groq"}` on 20 September 2026. Readiness does not validate a complete provider-generated diagnosis.
+- Latest production source-index validation fix is deployed, but an authenticated live Groq diagnosis through Unity remains unverified.
+- macOS standalone batch build attempted; Unity licensing rejected the headless entitlement. No verified standalone binary is supplied. Use the build menu from a licensed Editor.
+- Quest rig, passthrough, Android build and headset acceptance testing remain pending. Do not label this release a completed Quest application.
+- Current project is Unity 6.4 (6000.4.11f1), not a validated Unity 2022.3 project.
 
-The local Unity source already uses the supplied repository URL. Fetching a fresh clone failed with a TLS trust-store error; verification was not disabled. Cached origin/main contains the existing WebSocket contract used for compatibility. Current local user changes were preserved; no GitHub push was performed.
-
-## Gemini provider update
-
-All 14 backend tests pass on Node 26, including Gemini request schema, returned sources, quota exhaustion, refusal and truncated/invalid output. Tests inject provider responses; no live Gemini call or key has been used. Chrome repository owner access was confirmed. No public deployment has been created.
+Render Free uses ephemeral SQLite storage. Server confirmations are real, but history is not durable across service replacement/restart. Training machine and evidence are synthetic; this is not an approved repair system.

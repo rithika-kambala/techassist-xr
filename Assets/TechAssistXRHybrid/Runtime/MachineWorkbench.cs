@@ -31,7 +31,7 @@ namespace TechAssistXR.Hybrid
             session.EndSession(); procedurePanel.SetActive(false); infoPage.SetActive(true); evidencePage.SetActive(true); Refresh();
         }
         private void Refresh() {
-            badge.text = diagnosis.IsLive ? (diagnosis.ProviderMode == "mock" ? "BACKEND MOCK AI  /  PERSISTED COMPLETIONS" : "LIVE BACKEND  /  PERSISTED COMPLETIONS") : "SIMULATED AI  /  NO API CALLS OR CREDITS";
+            badge.text = diagnosis.IsLive ? (diagnosis.ProviderMode == "mock" ? "BACKEND MOCK AI  /  SERVER CONFIRMED STEPS" : "LIVE BACKEND  /  SERVER CONFIRMED STEPS") : "SIMULATED AI  /  NO API CALLS OR CREDITS";
             status.text=diagnosis.Status;
             analyzeButton.interactable=!diagnosis.Busy;
             repairButton.interactable=diagnosis.HasExecutablePlan && !diagnosis.Busy;

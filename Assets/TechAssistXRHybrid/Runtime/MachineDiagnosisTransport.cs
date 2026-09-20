@@ -68,7 +68,7 @@ namespace TechAssistXR.Hybrid
         {
             UpdateStatus("Connecting to authenticated machine catalog…");
             using (var web = UnityWebRequest.Get(url + "/api/machines/A102")) {
-                request = web; web.timeout = 30; web.SetRequestHeader("Authorization", "Bearer " + token);
+                request = web; web.timeout = 90; web.SetRequestHeader("Authorization", "Bearer " + token);
                 yield return web.SendWebRequest(); request = null;
                 if (web.result != UnityWebRequest.Result.Success) { Busy = false; UpdateStatus(ReadError(web)); yield break; }
                 MachineProfile profile = null;
