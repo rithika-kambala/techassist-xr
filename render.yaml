@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: techassist-xr-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: npm start
+    healthCheckPath: /readyz
+    autoDeployTrigger: "off"
+    numInstances: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: AI_MODE
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash-lite
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TECHNICIAN_TOKEN
+        generateValue: true
+      - key: DB_PATH
+        value: /tmp/techassist.sqlite
+      - key: DAILY_LIMIT
+        value: "20"
+      - key: GLOBAL_DAILY_LIMIT
+        value: "100"

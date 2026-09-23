@@ -1,0 +1,7 @@
+{
+  "steps": [
+    { "step_number": 1, "title": "Locate the control panel", "instruction": "In this simulated machine, select ControlPanel, then confirm the step.", "target_component": "ControlPanel" },
+    { "step_number": 2, "title": "Identify the motor housing", "instruction": "Select MotorHousing to identify the next service target, then confirm.", "target_component": "MotorHousing" },
+    { "step_number": 3, "title": "Identify the filter cover", "instruction": "Select FilterCover and confirm to finish this demonstration.", "target_component": "FilterCover" }
+  ]
+}
