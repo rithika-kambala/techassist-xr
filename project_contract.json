@@ -1,0 +1,33 @@
+{
+  "project": "TechAssist XR",
+  "source": "Local integration fixture. Replace with Pavithra and Shreya's frozen target_component naming.",
+  "machine": {
+    "machine_id": "A102",
+    "display_name": "Machine A102"
+  },
+  "procedure": {
+    "procedure_id": "a102-repair-v1",
+    "title": "Machine A102 repair procedure",
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Inspect the pressure gauge",
+        "instruction": "Check the gauge reading and confirm whether pressure is outside the normal range.",
+        "target_component": "pressure_gauge"
+      },
+      {
+        "step_number": 2,
+        "title": "Close the isolation valve",
+        "instruction": "Move to the isolation valve and close it before continuing the repair.",
+        "target_component": "isolation_valve"
+      },
+      {
+        "step_number": 3,
+        "title": "Inspect the control panel",
+        "instruction": "Check the control panel fault indicator and acknowledge the repair step.",
+        "target_component": "control_panel"
+      }
+    ]
+  },
+  "component_naming_rule": "Each target_component must exactly match the named Unity machine object delivered by Shreya."
+}
