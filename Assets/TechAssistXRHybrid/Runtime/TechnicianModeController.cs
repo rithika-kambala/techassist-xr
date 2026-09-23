@@ -23,6 +23,8 @@ namespace TechAssistXR.Hybrid
         {
 #if TECHASSIST_FORCE_QUEST
             mode = TechnicianMode.Quest;
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            mode = TechnicianMode.Quest;
 #elif TECHASSIST_FORCE_DESKTOP
             mode = TechnicianMode.Desktop;
 #endif
